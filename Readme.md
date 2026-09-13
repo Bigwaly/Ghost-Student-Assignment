@@ -613,3 +613,220 @@ app.js
 ```
 
 This README contains the Part A explanations, Part B implementation summary, research notes, and Part C test results required for the assignment.
+
+
+# Part C — Prove It: Test Evidence
+
+The required endpoints were tested using Thunder Client. The screenshots below provide evidence of the request and response for each required test.
+
+## Test 1 — Search `q=ada` finds both `Ada` and `ADA`
+
+Request:
+
+```text
+GET http://localhost:4555/search-students?q=ada
+```
+
+Expected: `200 OK`, with an array containing both `Ada` and `ADA`.
+
+Result: PASS
+
+![Test 1 - Search Ada](screenshots/test-1-search-ada.png)
+
+---
+
+## Test 2 — Search with no `q`
+
+Request:
+
+```text
+GET http://localhost:4555/search-students
+```
+
+Expected: `400 Bad Request`.
+
+Actual response:
+
+```json
+{
+  "message": "Search query is required"
+}
+```
+
+Result: PASS
+
+![Test 2 - Search Without Query](screenshots/test-2-no-query.png)
+
+---
+
+## Test 3 — GET student with invalid ID
+
+Request:
+
+```text
+GET http://localhost:4555/get-student/abc123
+```
+
+Expected: `400 Bad Request`, not `500`.
+
+Actual response:
+
+```json
+{
+  "message": "Invalid student ID"
+}
+```
+
+Result: PASS
+
+![Test 3 - Invalid Student ID](screenshots/test-3-invalid-id.png)
+
+---
+
+## Test 4 — GET valid-looking ID that does not exist
+
+Request:
+
+```text
+GET http://localhost:4555/get-student/507f1f77bcf86cd799439011
+```
+
+Expected: `404 Not Found`.
+
+Actual response:
+
+```json
+{
+  "message": "Student not found"
+}
+```
+
+Result: PASS
+
+![Test 4 - Nonexistent Student](screenshots/test-4-nonexistent-id.png)
+
+---
+
+## Test 5 — PATCH course on a real student
+
+Request:
+
+```text
+PATCH http://localhost:4555/students/6aa5ff3e3994721310d9d17c/course
+```
+
+Request body:
+
+```json
+{
+  "course": "Computer Science"
+}
+```
+
+Expected: `200 OK` and the response body should show the new course.
+
+Result: PASS
+
+![Test 5 - PATCH Course](screenshots/test-5-patch-course.png)
+
+---
+
+## Test 6 — PATCH with an invalid course
+
+Request:
+
+```text
+PATCH http://localhost:4555/students/6aa5ff3e3994721310d9d17c/course
+```
+
+Request body:
+
+```json
+{
+  "course": "A"
+}
+```
+
+The schema requires the course to contain at least two characters.
+
+Expected: `400 Bad Request` from validation, not `500`.
+
+Actual response:
+
+```json
+{
+  "message": "Invalid course",
+  "error": "Validation failed: course: Path `course` (`A`, length 1) is shorter than the minimum allowed length (2)."
+}
+```
+
+Result: PASS
+
+![Test 6 - Invalid Course](screenshots/test-6-invalid-course.png)
+
+---
+
+## Test 7 — Create two students with the same email
+
+The first student was created successfully using:
+
+```text
+POST http://localhost:4555/create-student
+```
+
+The same email was then submitted again.
+
+Expected: The second request should return `409 Conflict`.
+
+Actual response:
+
+```json
+{
+  "message": "Email already exists"
+}
+```
+
+Result: PASS
+
+![Test 7 - Duplicate Email](screenshots/test-7-duplicate-email.png)
+
+---
+
+## Test 8 — Delete an ID that does not exist
+
+Request:
+
+```text
+DELETE http://localhost:4555/delete-student/507f1f77bcf86cd799439011
+```
+
+Expected: `404 Not Found`.
+
+Actual response:
+
+```json
+{
+  "message": "Student not found"
+}
+```
+
+Result: PASS
+
+![Test 8 - Delete Nonexistent Student](screenshots/test-8-delete-nonexistent.png)
+
+---
+
+## Part C Summary
+
+| # | Test | Expected | Result |
+|---|---|---|---|
+| 1 | Search `q=ada` | 200, finds Ada and ADA | PASS |
+| 2 | Search without `q` | 400 | PASS |
+| 3 | Invalid ID `abc123` | 400 | PASS |
+| 4 | Valid-looking nonexistent ID | 404 | PASS |
+| 5 | PATCH real student's course | Updated course returned | PASS |
+| 6 | PATCH course `"A"` | 400 validation error | PASS |
+| 7 | Duplicate email | Second request returns 409 | PASS |
+| 8 | Delete nonexistent student | 404 | PASS |
+
+Overall Part C result: 8/8 tests passed.
